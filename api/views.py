@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 from .models import bancoApi
 from .serializers import DesafioSerializer
 from datetime import datetime
@@ -63,3 +64,8 @@ class uploadView(APIView):
             return Response(final_results, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'erro': str(e), 'mensagem': 'Erro ao carregar arquivo'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class allView(generics.ListAPIView):
+    queryset = bancoApi.objects.all()
+    serializer_class = DesafioSerializer
