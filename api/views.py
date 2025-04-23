@@ -93,13 +93,15 @@ class orderView(APIView):
         except Exception as e:
             return Response({'erro': str(e), 'mensagem': 'Erro ao processar'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class dateView(APIView):
     def get(self, request):
-        try:
-            start_date = request.query_params.get('start_date')
-            end_date = request.query_params.get('end_date')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
 
+        if not start_date or not end_date:
+            return Response({'error': 'periodo de data não informado'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
             start_date = datetime.strptime(start_date, '%Y%m%d')
             end_date = datetime.strptime(end_date, '%Y%m%d')
 
@@ -125,6 +127,8 @@ class dateView(APIView):
 
             return Response(results, status=status.HTTP_200_OK)
 
+        except ValueError:
+            return Response({'error': 'Formato de data invalido. Utilize YYYYMMDD'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'erro': str(e), 'mensagem': 'Erro ao processar'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
