@@ -65,7 +65,66 @@ class uploadView(APIView):
         except Exception as e:
             return Response({'erro': str(e), 'mensagem': 'Erro ao carregar arquivo'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
 class allView(generics.ListAPIView):
     queryset = bancoApi.objects.all()
     serializer_class = DesafioSerializer
+
+class orderView(APIView):
+    def get(self, request, order_id):
+        try:
+            data = bancoApi.objects.all()
+            
+            results = {}
+            for index in data:
+                for order in index.orders:
+                    if order['order_id'] == order_id:
+                        results = {
+                            'user_id': index.user_id,
+                            'name': index.name,
+                            'orders': [order]
+                        }
+                        break
+                        
+            if not results:
+                return Response({'error': 'Pedido não existe'}, status=status.HTTP_404_NOT_FOUND)
+                
+            return Response(results, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'erro': str(e), 'mensagem': 'Erro ao processar'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class dateView(APIView):
+    def get(self, request):
+        try:
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+
+            start_date = datetime.strptime(start_date, '%Y%m%d')
+            end_date = datetime.strptime(end_date, '%Y%m%d')
+
+            data = bancoApi.objects.all()
+            results = []
+
+            for index in data:
+                filter = []
+                for order in index.orders:
+                    order_date = datetime.strptime(order['date'], '%Y-%m-%d')
+                    if order_date >= start_date and order_date <= end_date:
+                        filter.append(order)
+                
+                if filter:
+                    results.append({
+                        'user_id': index.user_id,
+                        'name': index.name,
+                        'orders': filter
+                    })
+
+            if not results:
+                return Response({'message': 'Não existe pedidos nesse periodo'}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(results, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'erro': str(e), 'mensagem': 'Erro ao processar'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
