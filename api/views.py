@@ -55,7 +55,12 @@ class uploadView(APIView):
                 final_results.append(user_data)
             
             for result in final_results:
-                serializer = DesafioSerializer(data=result)
+                try:
+                    instance = bancoApi.objects.get(user_id=result['user_id'])
+                    serializer = DesafioSerializer(instance, data=result, partial=True)
+                except bancoApi.DoesNotExist:
+                    serializer = DesafioSerializer(data=result)
+                
                 if serializer.is_valid():
                     serializer.save()
                 else:
